@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OCR Local CPU</title>
+    <style>
+        :root {
+            --bg-1: #0b0c0f;
+            --bg-2: #111317;
+            --panel: rgba(20, 23, 29, 0.92);
+            --panel-2: rgba(28, 31, 38, 0.96);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.14);
+            --text: #f3f5f7;
+            --muted: #a9b0bb;
+            --soft: #d9dde4;
+            --accent: #d62828;
+            --accent-2: #ff5c5c;
+            --ok: #20c997;
+            --warn: #ffb020;
+            --danger: #ff5d5d;
+            --shadow: 0 18px 60px rgba(0, 0, 0, 0.4);
+            --radius-xl: 22px;
+            --radius-lg: 18px;
+            --radius-md: 14px;
+            --radius-sm: 12px;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            font-family: "Inter", "Segoe UI", Arial, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(214, 40, 40, 0.18), transparent 25%),
+                radial-gradient(circle at top right, rgba(255, 255, 255, 0.05), transparent 22%),
+                linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 100%);
+        }
+
+        body {
+            padding: 24px;
+        }
+
+        .app {
+            width: min(1180px, 100%);
+            margin: 0 auto;
+            display: grid;
+            gap: 20px;
+        }
+
+        .glass {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(14px);
+        }
+
+        .hero {
+            padding: 28px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .brand {
+            display: grid;
+            gap: 8px;
+        }
+
+        .version-line {
+            font-size: 0.82rem;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: clamp(2rem, 3vw, 3.2rem);
+            line-height: 1;
+            letter-spacing: -0.04em;
+        }
+
+        .hero p {
+            margin: 0;
+            color: var(--muted);
+            max-width: 78ch;
+            line-height: 1.6;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(360px, 430px) 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            padding: 22px;
+        }
+
+        .panel h2 {
+            margin: 0 0 8px;
+            font-size: 1.12rem;
+            letter-spacing: -0.02em;
+        }
+
+        .panel > p {
+            margin: 0 0 18px;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .stack {
+            display: grid;
+            gap: 14px;
+        }
+
+        .field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .field.inline-2 {
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .label {
+            font-size: 0.86rem;
+            color: var(--muted);
+        }
+
+        input,
+        button {
+            font: inherit;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--panel-2);
+            color: var(--text);
+            padding: 12px 14px;
+            outline: none;
+            transition: border-color 0.16s ease, transform 0.16s ease;
+        }
+
+        input[type="file"] {
+            padding: 10px 12px;
+        }
+
+        input:focus {
+            border-color: rgba(214, 40, 40, 0.7);
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: 0;
+            border-radius: 999px;
+            padding: 12px 18px;
+            cursor: pointer;
+            transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .primary {
+            color: white;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+        }
+
+        .secondary {
+            color: var(--text);
+            background: transparent;
+            border: 1px solid var(--border-strong);
+        }
+
+        .notice {
+            min-height: 52px;
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--soft);
+            line-height: 1.45;
+        }
+
+        .notice[data-tone="neutral"] {
+            border-color: var(--border);
+        }
+
+        .notice[data-tone="success"] {
+            border-color: rgba(32, 201, 151, 0.35);
+            background: rgba(32, 201, 151, 0.12);
+            color: #dffcf3;
+        }
+
+        .notice[data-tone="error"] {
+            border-color: rgba(255, 93, 93, 0.35);
+            background: rgba(255, 93, 93, 0.12);
+            color: #ffe1e1;
+        }
+
+        .notice[data-tone="warning"] {
+            border-color: rgba(255, 176, 32, 0.35);
+            background: rgba(255, 176, 32, 0.12);
+            color: #fff0d0;
+        }
+
+        .jobs-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .jobs {
+            display: grid;
+            gap: 14px;
+        }
+
+        .job-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            background: rgba(255, 255, 255, 0.025);
+            padding: 18px;
+            display: grid;
+            gap: 14px;
+        }
+
+        .job-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .job-head h3 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+        }
+
+        .job-meta {
+            display: grid;
+            gap: 4px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 116px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            font-weight: 700;
+        }
+
+        .pill[data-status="accepted"] {
+            border-color: rgba(255, 176, 32, 0.32);
+            color: #ffe3ad;
+            background: rgba(255, 176, 32, 0.08);
+        }
+
+        .pill[data-status="queued"] {
+            border-color: rgba(255, 176, 32, 0.32);
+            color: #ffe3ad;
+            background: rgba(255, 176, 32, 0.08);
+        }
+
+        .pill[data-status="processing"] {
+            border-color: rgba(214, 40, 40, 0.38);
+            color: #ffd7d7;
+            background: rgba(214, 40, 40, 0.13);
+        }
+
+        .pill[data-status="completed"] {
+            border-color: rgba(32, 201, 151, 0.35);
+            color: #dcfff4;
+            background: rgba(32, 201, 151, 0.12);
+        }
+
+        .pill[data-status="failed"] {
+            border-color: rgba(255, 93, 93, 0.38);
+            color: #ffe1e1;
+            background: rgba(255, 93, 93, 0.12);
+        }
+
+        .progress-wrap {
+            display: grid;
+            gap: 8px;
+        }
+
+        .progress-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--border);
+        }
+
+        .progress-bar > div {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+            transition: width 0.2s ease;
+        }
+
+        .markdown-output {
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            color: #d7dce4;
+            line-height: 1.6;
+            padding: 14px;
+            max-height: 420px;
+            overflow: auto;
+            word-break: break-word;
+        }
+
+        .markdown-output.empty {
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .markdown-output h1,
+        .markdown-output h2,
+        .markdown-output h3,
+        .markdown-output h4,
+        .markdown-output h5,
+        .markdown-output h6 {
+            margin: 1em 0 0.5em;
+            line-height: 1.25;
+            color: var(--text);
+        }
+
+        .markdown-output h1:first-child,
+        .markdown-output h2:first-child,
+        .markdown-output h3:first-child,
+        .markdown-output h4:first-child,
+        .markdown-output h5:first-child,
+        .markdown-output h6:first-child,
+        .markdown-output p:first-child,
+        .markdown-output ul:first-child,
+        .markdown-output ol:first-child,
+        .markdown-output blockquote:first-child,
+        .markdown-output pre:first-child {
+            margin-top: 0;
+        }
+
+        .markdown-output p {
+            margin: 0 0 0.9em;
+        }
+
+        .markdown-output ul,
+        .markdown-output ol {
+            margin: 0 0 0.9em 1.2em;
+            padding-left: 1.1em;
+        }
+
+        .markdown-output li {
+            margin: 0.2em 0;
+        }
+
+        .markdown-output blockquote {
+            margin: 0 0 0.9em;
+            padding: 0.7em 1em;
+            border-left: 3px solid rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--soft);
+        }
+
+        .markdown-output code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.92em;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.15em 0.35em;
+            border-radius: 6px;
+        }
+
+        .markdown-output pre {
+            margin: 0 0 0.9em;
+            padding: 12px 14px;
+            overflow: auto;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border);
+        }
+
+        .markdown-output pre code {
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        .markdown-output a {
+            color: #9ed0ff;
+            text-decoration: none;
+        }
+
+        .markdown-output a:hover {
+            text-decoration: underline;
+        }
+
+        .markdown-output table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0 0 0.9em;
+            overflow: hidden;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .markdown-output thead {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .markdown-output th,
+        .markdown-output td {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .markdown-output th {
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .markdown-output tbody tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .markdown-output .table-wrap {
+            overflow-x: auto;
+            margin: 0 0 0.9em;
+        }
+
+        .job-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            border: 1px dashed var(--border-strong);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            text-align: center;
+            color: var(--muted);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .small {
+            font-size: 0.84rem;
+            color: var(--muted);
+        }
+
+        @media (max-width: 980px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 14px;
+            }
+
+            .hero,
+            .panel {
+                padding: 18px;
+            }
+
+            .field.inline-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="app">
+        <section class="hero glass">
+            <div class="brand">
+                <div class="version-line" id="version-line"></div>
+                <h1 id="app-title"></h1>
+                <p id="app-description"></p>
+            </div>
+        </section>
+
+        <section class="layout">
+            <aside class="panel glass">
+                <h2>Procesar archivo</h2>
+                <p>
+                    Sube un documento o imagen y recibe el resultado cuando termine el procesamiento.
+                </p>
+
+                <div class="stack">
+                    <div class="field inline-2">
+                        <div class="field">
+                            <label class="label" for="file-input">Archivo</label>
+                            <input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,.tif,.tiff,.webp,application/pdf,image/png,image/jpeg,image/tiff,image/webp" />
+                        </div>
+
+                        <div class="field">
+                            <label class="label" for="filename-preview">Nombre detectado</label>
+                            <input id="filename-preview" type="text" readonly placeholder="Sin archivo seleccionado" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <button id="submit-job" class="primary" type="button">Procesar archivo</button>
+                        <button id="clear-jobs" class="secondary" type="button">Limpiar vista</button>
+                    </div>
+
+                    <div id="notice" class="notice" data-tone="neutral">Listo para procesar.</div>
+                </div>
+            </aside>
+
+            <section class="panel glass">
+                <div class="jobs-toolbar">
+                    <div>
+                        <h2>Tareas</h2>
+                    </div>
+                </div>
+
+                <div id="jobs" class="jobs"></div>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        const UI_META = {
+            projectName: "OCR Local CPU",
+            projectSlug: "ocr_local_cpu",
+            version: "1.1.4",
+            environment: "development",
+            basePath: "/api/ocr_local_cpu",
+            displayName: "OCR Local CPU",
+            description: "Módulo OCR oficial para QueAI. Imagen a texto de alta fidelidad basado en Tesseract. Ejecución local en CPU.",
+        };
+
+        const DEFAULT_BASE_PATH = UI_META.basePath;
+
+        const state = {
+            apiBase: "",
+            jobs: [],
+            activeControllers: new Map(),
+        };
+
+        const elements = {
+            appTitle: document.getElementById("app-title"),
+            appDescription: document.getElementById("app-description"),
+            versionLine: document.getElementById("version-line"),
+            fileInput: document.getElementById("file-input"),
+            filenamePreview: document.getElementById("filename-preview"),
+            submitJob: document.getElementById("submit-job"),
+            clearJobs: document.getElementById("clear-jobs"),
+            jobs: document.getElementById("jobs"),
+            notice: document.getElementById("notice"),
+        };
+
+        function detectApiBaseFromLocation() {
+            const { origin, pathname } = window.location;
+
+            if (pathname.endsWith("/ui")) {
+                return `${origin}${pathname.replace(/\/ui$/, "")}`;
+            }
+
+            if (pathname.includes("/ui/")) {
+                return `${origin}${pathname.split("/ui/")[0]}`;
+            }
+
+            return `${origin}${DEFAULT_BASE_PATH}`;
+        }
+
+        function apiUrl(path) {
+            return `${state.apiBase}${path}`;
+        }
+
+        function setNotice(message, tone = "neutral") {
+            elements.notice.dataset.tone = tone;
+            elements.notice.textContent = message;
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        function formatDate(value) {
+            if (!value) return "-";
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return value;
+            return date.toLocaleString();
+        }
+
+        function applyStaticMeta() {
+            document.title = UI_META.displayName;
+            elements.appTitle.textContent = UI_META.displayName;
+            elements.appDescription.textContent = UI_META.description;
+            elements.versionLine.textContent = `Versión ${UI_META.version}`;
+        }
+
+        function renderInlineMarkdown(text) {
+            let html = escapeHtml(text);
+
+            html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+            html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+            html = html.replace(/__([^_]+)__/g, "<strong>$1</strong>");
+            html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+            html = html.replace(/_([^_]+)_/g, "<em>$1</em>");
+            html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+
+            return html;
+        }
+
+        function isMarkdownTableSeparator(line) {
+            const trimmed = line.trim();
+            if (!trimmed.includes("|")) return false;
+
+            const cells = trimmed.split("|").map(cell => cell.trim()).filter(Boolean);
+            if (!cells.length) return false;
+
+            return cells.every(cell => /^:?-{3,}:?$/.test(cell));
+        }
+
+        function parseMarkdownTableRow(line) {
+            let trimmed = line.trim();
+
+            if (trimmed.startsWith("|")) trimmed = trimmed.slice(1);
+            if (trimmed.endsWith("|")) trimmed = trimmed.slice(0, -1);
+
+            return trimmed.split("|").map(cell => cell.trim());
+        }
+
+        function getTableAlignments(separatorLine) {
+            const cells = parseMarkdownTableRow(separatorLine);
+
+            return cells.map(cell => {
+                const left = cell.startsWith(":");
+                const right = cell.endsWith(":");
+
+                if (left && right) return "center";
+                if (right) return "right";
+                if (left) return "left";
+                return "left";
+            });
+        }
+
+        function renderMarkdownTable(headerLine, separatorLine, bodyLines) {
+            const headers = parseMarkdownTableRow(headerLine);
+            const alignments = getTableAlignments(separatorLine);
+
+            const thead = `
+                <thead>
+                    <tr>
+                        ${headers.map((cell, index) => {
+                            const align = alignments[index] || "left";
+                            return `<th style="text-align:${align}">${renderInlineMarkdown(cell)}</th>`;
+                        }).join("")}
+                    </tr>
+                </thead>
+            `;
+
+            const tbody = `
+                <tbody>
+                    ${bodyLines.map(line => {
+                        const cells = parseMarkdownTableRow(line);
+                        const cellCount = Math.max(headers.length, cells.length);
+
+                        return `
+                            <tr>
+                                ${Array.from({ length: cellCount }).map((_, index) => {
+                                    const cell = cells[index] ?? "";
+                                    const align = alignments[index] || "left";
+                                    return `<td style="text-align:${align}">${renderInlineMarkdown(cell)}</td>`;
+                                }).join("")}
+                            </tr>
+                        `;
+                    }).join("")}
+                </tbody>
+            `;
+
+            return `<div class="table-wrap"><table>${thead}${tbody}</table></div>`;
+        }
+
+        function renderMarkdown(text) {
+            if (!text || !text.trim()) {
+                return `<div class="markdown-output empty">Todavía no hay texto final disponible.</div>`;
+            }
+
+            const normalized = text.replace(/\r\n/g, "\n");
+            const lines = normalized.split("\n");
+            const blocks = [];
+
+            let i = 0;
+            while (i < lines.length) {
+                const line = lines[i];
+
+                if (!line.trim()) {
+                    i++;
+                    continue;
+                }
+
+                if (line.startsWith("```")) {
+                    const codeLines = [];
+                    i++;
+                    while (i < lines.length && !lines[i].startsWith("```")) {
+                        codeLines.push(lines[i]);
+                        i++;
+                    }
+                    if (i < lines.length && lines[i].startsWith("```")) {
+                        i++;
+                    }
+                    blocks.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+                    continue;
+                }
+
+                const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
+                if (headingMatch) {
+                    const level = headingMatch[1].length;
+                    blocks.push(`<h${level}>${renderInlineMarkdown(headingMatch[2])}</h${level}>`);
+                    i++;
+                    continue;
+                }
+
+                if (
+                    i + 1 < lines.length &&
+                    lines[i].includes("|") &&
+                    isMarkdownTableSeparator(lines[i + 1])
+                ) {
+                    const headerLine = lines[i];
+                    const separatorLine = lines[i + 1];
+                    const bodyLines = [];
+
+                    i += 2;
+                    while (i < lines.length && lines[i].trim() && lines[i].includes("|")) {
+                        bodyLines.push(lines[i]);
+                        i++;
+                    }
+
+                    blocks.push(renderMarkdownTable(headerLine, separatorLine, bodyLines));
+                    continue;
+                }
+
+                if (/^>\s+/.test(line)) {
+                    const quoteLines = [];
+                    while (i < lines.length && /^>\s+/.test(lines[i])) {
+                        quoteLines.push(lines[i].replace(/^>\s+/, ""));
+                        i++;
+                    }
+                    blocks.push(`<blockquote>${quoteLines.map(renderInlineMarkdown).join("<br>")}</blockquote>`);
+                    continue;
+                }
+
+                if (/^[-*]\s+/.test(line)) {
+                    const items = [];
+                    while (i < lines.length && /^[-*]\s+/.test(lines[i])) {
+                        items.push(`<li>${renderInlineMarkdown(lines[i].replace(/^[-*]\s+/, ""))}</li>`);
+                        i++;
+                    }
+                    blocks.push(`<ul>${items.join("")}</ul>`);
+                    continue;
+                }
+
+                if (/^\d+\.\s+/.test(line)) {
+                    const items = [];
+                    while (i < lines.length && /^\d+\.\s+/.test(lines[i])) {
+                        items.push(`<li>${renderInlineMarkdown(lines[i].replace(/^\d+\.\s+/, ""))}</li>`);
+                        i++;
+                    }
+                    blocks.push(`<ol>${items.join("")}</ol>`);
+                    continue;
+                }
+
+                const paragraphLines = [];
+                while (
+                    i < lines.length &&
+                    lines[i].trim() &&
+                    !lines[i].startsWith("```") &&
+                    !/^(#{1,6})\s+/.test(lines[i]) &&
+                    !/^>\s+/.test(lines[i]) &&
+                    !/^[-*]\s+/.test(lines[i]) &&
+                    !/^\d+\.\s+/.test(lines[i]) &&
+                    !(
+                        i + 1 < lines.length &&
+                        lines[i].includes("|") &&
+                        isMarkdownTableSeparator(lines[i + 1])
+                    )
+                ) {
+                    paragraphLines.push(lines[i]);
+                    i++;
+                }
+
+                blocks.push(`<p>${paragraphLines.map(renderInlineMarkdown).join("<br>")}</p>`);
+            }
+
+            return `<div class="markdown-output">${blocks.join("")}</div>`;
+        }
+
+        function renderJobs() {
+            if (!state.jobs.length) {
+                elements.jobs.innerHTML = `
+                    <div class="empty-state">
+                        No hay tareas todavía. Sube un archivo para comenzar.
+                    </div>
+                `;
+                return;
+            }
+
+            elements.jobs.innerHTML = state.jobs.map((job) => {
+                const progress = Number.isFinite(job.progress) ? job.progress : 0;
+                const message = job.message || "Esperando actualizaciones...";
+                const warnings = Array.isArray(job.warnings) && job.warnings.length
+                    ? `
+                        <div class="notice" data-tone="warning">
+                            ${job.warnings.map(escapeHtml).join("<br>")}
+                        </div>
+                    `
+                    : "";
+
+                const error = job.error
+                    ? `<div class="notice" data-tone="error">${escapeHtml(job.error)}</div>`
+                    : "";
+
+                const renderedResult = renderMarkdown(job.resultText || "");
+
+                return `
+                    <article class="job-card">
+                        <div class="job-head">
+                            <div>
+                                <h3>${escapeHtml(job.fileName || "Archivo")}</h3>
+                                <div class="job-meta">
+                                    <span><strong>Estado:</strong> ${escapeHtml(job.status || "-")}</span>
+                                    <span><strong>Creada:</strong> ${escapeHtml(formatDate(job.createdAt))}</span>
+                                </div>
+                            </div>
+                            <span class="pill" data-status="${escapeHtml(job.status || "queued")}">${escapeHtml(job.status || "queued")}</span>
+                        </div>
+
+                        <div class="progress-wrap">
+                            <div class="progress-meta">
+                                <span>${escapeHtml(message)}</span>
+                                <strong>${progress}%</strong>
+                            </div>
+                            <div class="progress-bar">
+                                <div style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+
+                        ${warnings}
+                        ${error}
+
+                        <div>
+                            <div class="small" style="margin-bottom:8px;">Resultado</div>
+                            ${renderedResult}
+                        </div>
+
+                        <div class="job-actions">
+                            ${job.status === "processing" || job.status === "queued" || job.status === "accepted"
+                                ? `<button class="secondary" type="button" onclick="cancelJob('${escapeHtml(job.localId)}')">Cancelar visualización</button>`
+                                : ""
+                            }
+                            ${job.resultText
+                                ? `<button class="secondary" type="button" onclick="copyResult('${escapeHtml(job.localId)}')">Copiar texto</button>`
+                                : ""
+                            }
+                        </div>
+                    </article>
+                `;
+            }).join("");
+        }
+
+        function makeLocalId() {
+            return `local_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+        }
+
+        function upsertJob(localId, partial) {
+            const index = state.jobs.findIndex((job) => job.localId === localId);
+
+            if (index === -1) {
+                state.jobs.unshift({
+                    localId,
+                    fileName: "",
+                    status: "queued",
+                    progress: 0,
+                    warnings: [],
+                    error: null,
+                    result: null,
+                    resultText: "",
+                    message: null,
+                    createdAt: new Date().toISOString(),
+                    ...partial,
+                });
+            } else {
+                state.jobs[index] = {
+                    ...state.jobs[index],
+                    ...partial,
+                };
+            }
+
+            renderJobs();
+        }
+
+        function extractResultText(result) {
+            if (!result) return "";
+
+            if (typeof result === "string") return result;
+            if (typeof result.markdown_text === "string") return result.markdown_text;
+            if (typeof result.markdown === "string") return result.markdown;
+            if (typeof result.text === "string") return result.text;
+            if (typeof result.content === "string") return result.content;
+            if (typeof result.raw_text === "string") return result.raw_text;
+            if (typeof result.extracted_text === "string") return result.extracted_text;
+
+            return "";
+        }
+
+        function parseSSEBlock(block) {
+            const lines = block.split(/\r?\n/);
+            let event = "message";
+            const dataLines = [];
+            let id = null;
+
+            for (const line of lines) {
+                if (!line || line.startsWith(":")) continue;
+
+                if (line.startsWith("event:")) {
+                    event = line.slice(6).trim();
+                } else if (line.startsWith("data:")) {
+                    dataLines.push(line.slice(5).trimStart());
+                } else if (line.startsWith("id:")) {
+                    id = line.slice(3).trim();
+                }
+            }
+
+            const rawData = dataLines.join("\n");
+            let data = rawData;
+
+            try {
+                data = rawData ? JSON.parse(rawData) : null;
+            } catch {
+                data = rawData;
+            }
+
+            return { event, data, id };
+        }
+
+        async function consumeSSEStream(response, onEvent) {
+            if (!response.body) {
+                throw new Error("El navegador no pudo leer el stream SSE.");
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let buffer = "";
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+
+                let separatorIndex;
+                while ((separatorIndex = buffer.indexOf("\n\n")) !== -1) {
+                    const rawBlock = buffer.slice(0, separatorIndex).trim();
+                    buffer = buffer.slice(separatorIndex + 2);
+
+                    if (!rawBlock) continue;
+                    const parsed = parseSSEBlock(rawBlock);
+                    onEvent(parsed);
+                }
+            }
+
+            const remaining = buffer.trim();
+            if (remaining) {
+                onEvent(parseSSEBlock(remaining));
+            }
+        }
+
+        async function submitOCRJob() {
+            state.apiBase = detectApiBaseFromLocation();
+
+            const file = elements.fileInput.files[0];
+
+            if (!file) {
+                setNotice("Debes seleccionar un archivo antes de enviarlo.", "error");
+                return;
+            }
+
+            const localId = makeLocalId();
+            const controller = new AbortController();
+            state.activeControllers.set(localId, controller);
+
+            upsertJob(localId, {
+                fileName: file.name,
+                status: "queued",
+                progress: 0,
+                message: "Preparando envío...",
+                createdAt: new Date().toISOString(),
+            });
+
+            elements.submitJob.disabled = true;
+            setNotice(`Enviando ${file.name} al OCR...`, "neutral");
+
+            try {
+                const formData = new FormData();
+                formData.append("file", file);
+
+                const response = await fetch(apiUrl("/process/stream"), {
+                    method: "POST",
+                    body: formData,
+                    signal: controller.signal,
+                });
+
+                if (!response.ok) {
+                    let detail = `Error HTTP ${response.status}`;
+                    try {
+                        const contentType = response.headers.get("content-type") || "";
+                        if (contentType.includes("application/json")) {
+                            const payload = await response.json();
+                            detail = payload?.detail || payload?.message || detail;
+                        } else {
+                            const text = await response.text();
+                            if (text) detail = text;
+                        }
+                    } catch {}
+                    throw new Error(detail);
+                }
+
+                upsertJob(localId, {
+                    status: "accepted",
+                    progress: 0,
+                    message: "Conexión establecida. Esperando eventos...",
+                });
+
+                await consumeSSEStream(response, ({ event, data }) => {
+                    if (!data || typeof data !== "object") return;
+
+                    const currentJob = state.jobs.find(j => j.localId === localId);
+                    const resultText = data.result ? extractResultText(data.result) : "";
+
+                    upsertJob(localId, {
+                        status: data.status ?? event ?? "processing",
+                        progress: Number.isFinite(data.progress) ? data.progress : (currentJob?.progress ?? 0),
+                        warnings: Array.isArray(data.warnings) ? data.warnings : [],
+                        error: data.error ?? null,
+                        result: data.result ?? null,
+                        resultText: resultText || currentJob?.resultText || "",
+                        message: data.message ?? event ?? null,
+                        createdAt: data.created_at ?? currentJob?.createdAt,
+                    });
+
+                    if (event === "completed" || data.event === "completed") {
+                        setNotice(`OCR completado para ${file.name}.`, "success");
+                    }
+
+                    if (event === "failed" || data.event === "failed") {
+                        setNotice(`La tarea falló: ${data.error || "sin detalle"}`, "error");
+                    }
+                });
+
+                const current = state.jobs.find(j => j.localId === localId);
+                if (current && current.status !== "completed" && current.status !== "failed") {
+                    upsertJob(localId, {
+                        status: "completed",
+                        progress: 100,
+                        message: "Proceso finalizado.",
+                    });
+                }
+            } catch (error) {
+                const aborted = controller.signal.aborted;
+                upsertJob(localId, {
+                    status: "failed",
+                    progress: aborted ? 0 : 100,
+                    error: aborted ? "Visualización cancelada por el usuario." : error.message,
+                    message: aborted ? "Conexión cancelada." : "No se pudo completar el proceso.",
+                });
+
+                setNotice(
+                    aborted
+                        ? `Se canceló la visualización de ${file.name}.`
+                        : `No se pudo procesar el archivo: ${error.message}`,
+                    aborted ? "warning" : "error"
+                );
+            } finally {
+                state.activeControllers.delete(localId);
+                elements.submitJob.disabled = false;
+            }
+        }
+
+        window.cancelJob = function(localId) {
+            const controller = state.activeControllers.get(localId);
+            if (controller) {
+                controller.abort();
+            }
+        };
+
+        window.copyResult = async function(localId) {
+            const job = state.jobs.find(j => j.localId === localId);
+            if (!job?.resultText) {
+                setNotice("No hay texto para copiar.", "warning");
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(job.resultText);
+                setNotice("Texto copiado al portapapeles.", "success");
+            } catch {
+                setNotice("No se pudo copiar el texto.", "error");
+            }
+        };
+
+        function clearJobs() {
+            for (const [, controller] of state.activeControllers.entries()) {
+                controller.abort();
+            }
+            state.activeControllers.clear();
+            state.jobs = [];
+            renderJobs();
+            setNotice("Vista de tareas limpiada.", "success");
+        }
+
+        function handleFileChange() {
+            const file = elements.fileInput.files[0];
+            elements.filenamePreview.value = file ? file.name : "";
+        }
+
+        elements.fileInput.addEventListener("change", handleFileChange);
+        elements.submitJob.addEventListener("click", submitOCRJob);
+        elements.clearJobs.addEventListener("click", clearJobs);
+
+        async function initialize() {
+            applyStaticMeta();
+            state.apiBase = detectApiBaseFromLocation();
+            renderJobs();
+        }
+
+        initialize();
+    </script>
+</body>
+</html>

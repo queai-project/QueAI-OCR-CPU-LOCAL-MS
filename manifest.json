@@ -1,0 +1,13 @@
+{
+  "name": "ocr_local_cpu",
+  "display_name": "OCR Local CPU",
+  "ui_entry_point": "/api/ocr_local_cpu/ui",
+  "configuration_entry_point": "/api/ocr_local_cpu/config/",
+  "documentation_entry_point": "/api/ocr_local_cpu/docs",
+  "healthcheck_entry_point": "/api/ocr_local_cpu/health",
+  "version": "1.1.4",
+  "logo": "ocr_logo.png",
+  "description": "Módulo OCR oficial para QueAI. Imagen a texto de alta fidelidad basado en Tesseract. Ejecución local en CPU.",
+  "author": "Juana Iris Perez && Alejandro Fonseca",
+  "license": "MIT"
+}

@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: plugin_ocr_local_cpu_redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - internal_ocr_network
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    container_name: plugin_ocr_local_cpu_service
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    volumes:
+      - job_tmp:/tmp/ocr-jobs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/ocr_local_cpu/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal_ocr_network
+      - odoo_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.plugin-ocr_local_cpu.rule=PathPrefix(`/api/ocr_local_cpu`)"
+      - "traefik.http.routers.plugin-ocr_local_cpu.entrypoints=web"
+      - "traefik.http.services.plugin-ocr_local_cpu.loadbalancer.server.port=8000"
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/worker.Dockerfile
+    container_name: plugin_ocr_local_cpu_worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - job_tmp:/tmp/ocr-jobs
+    networks:
+      - internal_ocr_network
+
+volumes:
+  job_tmp:
+
+networks:
+  internal_ocr_network:
+    driver: bridge
+  odoo_network:
+    external: true
