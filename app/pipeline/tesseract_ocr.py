@@ -397,11 +397,11 @@ class TesseractOCRPipeline(OCRPipeline):
     # OCR base
     # ---------------------------------------------------------------------
 
-    def _ocr_image_to_string(self, image: Image.Image) -> str:
+    def _ocr_image_to_string(self, image: Image.Image, lang: str | None = None) -> str:
         try:
             text = pytesseract.image_to_string(
                 image,
-                lang=self.settings.ocr_lang,
+                lang=lang or self.settings.ocr_lang,
                 config=self._build_tesseract_config(),
                 timeout=self.settings.tesseract_timeout_seconds,
             )
@@ -412,12 +412,13 @@ class TesseractOCRPipeline(OCRPipeline):
             raise OCRExecutionError(f"Tesseract timed out: {exc}") from exc
         except Exception as exc:
             raise OCRExecutionError(f"OCR image processing failed: {exc}") from exc
+        
 
-    def _ocr_image_data(self, image: Image.Image) -> dict[str, list[Any]]:
+    def _ocr_image_data(self, image: Image.Image, lang: str | None = None) -> dict[str, list[Any]]:
         try:
             return pytesseract.image_to_data(
                 image,
-                lang=self.settings.ocr_lang,
+                lang=lang or self.settings.ocr_lang,
                 config=self._build_tesseract_config(),
                 output_type=Output.DICT,
                 timeout=self.settings.tesseract_timeout_seconds,
@@ -428,7 +429,7 @@ class TesseractOCRPipeline(OCRPipeline):
             raise OCRExecutionError(f"Tesseract data extraction timed out: {exc}") from exc
         except Exception as exc:
             raise OCRExecutionError(f"OCR structured extraction failed: {exc}") from exc
-
+        
     # ---------------------------------------------------------------------
     # extracción OCR
     # ---------------------------------------------------------------------
@@ -1728,13 +1729,13 @@ class TesseractOCRPipeline(OCRPipeline):
     # página completa
     # ---------------------------------------------------------------------
 
-    def _ocr_page_to_markdown(self, image_path: Path, page_index: int, job_id: str) -> str:
+    def _ocr_page_to_markdown(self, image_path: Path, page_index: int, job_id: str, lang: str | None = None) -> str:
         start = time.monotonic()
 
         try:
             with Image.open(image_path) as raw:
                 image = self._preprocess_image(raw)
-                data = self._ocr_image_data(image)
+                data = self._ocr_image_data(image, lang=lang)
 
                 words = self._extract_words(data)
                 lines = self._group_lines(words)
@@ -1756,7 +1757,7 @@ class TesseractOCRPipeline(OCRPipeline):
                 markdown_text = self._postprocess_markdown(markdown_text)
 
                 if not markdown_text:
-                    markdown_text = self._ocr_image_to_string(image)
+                    markdown_text = self._ocr_image_to_string(image, lang=lang)
                     markdown_text = self._postprocess_markdown(markdown_text)
 
                 if not markdown_text:
@@ -1793,6 +1794,7 @@ class TesseractOCRPipeline(OCRPipeline):
         document_path: Path,
         job_id: str,
         report_progress,
+        lang: str | None = None,
     ) -> dict[str, str]:
         total_start = time.monotonic()
         suffix = document_path.suffix.lower()
@@ -1821,7 +1823,7 @@ class TesseractOCRPipeline(OCRPipeline):
                     message=f"Running OCR on page {index} of {total_pages}",
                 )
 
-                page_md = self._ocr_page_to_markdown(page_image, index, job_id)
+                page_md = self._ocr_page_to_markdown(page_image, index, job_id, lang=lang)
 
                 if include_page_headers:
                     page_sections.append(f"## Página {index}\n\n{page_md}")
@@ -1839,7 +1841,7 @@ class TesseractOCRPipeline(OCRPipeline):
                 message="Running OCR on image",
             )
 
-            page_md = self._ocr_page_to_markdown(document_path, 1, job_id)
+            page_md = self._ocr_page_to_markdown(document_path, 1, job_id, lang=lang)
 
             report_progress(
                 stage="finalize_markdown",

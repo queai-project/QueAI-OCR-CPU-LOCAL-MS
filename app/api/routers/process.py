@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import StreamingResponse
 
 from app.api.dependencies import get_process_service
@@ -17,6 +17,7 @@ router = APIRouter()
 async def process_stream(
     request: Request,
     file: UploadFile = File(...),
+    lang: str = Form("spa"),
     service: ProcessService = Depends(get_process_service),
 ):
-    return await service.start_stream(request=request, file=file)
+    return await service.start_stream(request=request, file=file, lang=lang)

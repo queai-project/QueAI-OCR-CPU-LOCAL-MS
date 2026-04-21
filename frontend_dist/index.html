@@ -134,12 +134,14 @@
         }
 
         input,
-        button {
+        button,
+        select {
             font: inherit;
         }
 
         input[type="text"],
-        input[type="file"] {
+        input[type="file"],
+        select {
             width: 100%;
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
@@ -154,7 +156,8 @@
             padding: 10px 12px;
         }
 
-        input:focus {
+        input:focus,
+        select:focus {
             border-color: rgba(214, 40, 40, 0.7);
         }
 
@@ -291,12 +294,7 @@
             font-weight: 700;
         }
 
-        .pill[data-status="accepted"] {
-            border-color: rgba(255, 176, 32, 0.32);
-            color: #ffe3ad;
-            background: rgba(255, 176, 32, 0.08);
-        }
-
+        .pill[data-status="accepted"],
         .pill[data-status="queued"] {
             border-color: rgba(255, 176, 32, 0.32);
             color: #ffe3ad;
@@ -368,121 +366,6 @@
             font-style: italic;
         }
 
-        .markdown-output h1,
-        .markdown-output h2,
-        .markdown-output h3,
-        .markdown-output h4,
-        .markdown-output h5,
-        .markdown-output h6 {
-            margin: 1em 0 0.5em;
-            line-height: 1.25;
-            color: var(--text);
-        }
-
-        .markdown-output h1:first-child,
-        .markdown-output h2:first-child,
-        .markdown-output h3:first-child,
-        .markdown-output h4:first-child,
-        .markdown-output h5:first-child,
-        .markdown-output h6:first-child,
-        .markdown-output p:first-child,
-        .markdown-output ul:first-child,
-        .markdown-output ol:first-child,
-        .markdown-output blockquote:first-child,
-        .markdown-output pre:first-child {
-            margin-top: 0;
-        }
-
-        .markdown-output p {
-            margin: 0 0 0.9em;
-        }
-
-        .markdown-output ul,
-        .markdown-output ol {
-            margin: 0 0 0.9em 1.2em;
-            padding-left: 1.1em;
-        }
-
-        .markdown-output li {
-            margin: 0.2em 0;
-        }
-
-        .markdown-output blockquote {
-            margin: 0 0 0.9em;
-            padding: 0.7em 1em;
-            border-left: 3px solid rgba(255, 255, 255, 0.18);
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--soft);
-        }
-
-        .markdown-output code {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 0.92em;
-            background: rgba(255, 255, 255, 0.08);
-            padding: 0.15em 0.35em;
-            border-radius: 6px;
-        }
-
-        .markdown-output pre {
-            margin: 0 0 0.9em;
-            padding: 12px 14px;
-            overflow: auto;
-            border-radius: 10px;
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid var(--border);
-        }
-
-        .markdown-output pre code {
-            background: transparent;
-            padding: 0;
-            border-radius: 0;
-        }
-
-        .markdown-output a {
-            color: #9ed0ff;
-            text-decoration: none;
-        }
-
-        .markdown-output a:hover {
-            text-decoration: underline;
-        }
-
-        .markdown-output table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 0 0 0.9em;
-            overflow: hidden;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .markdown-output thead {
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        .markdown-output th,
-        .markdown-output td {
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            text-align: left;
-            vertical-align: top;
-        }
-
-        .markdown-output th {
-            color: var(--text);
-            font-weight: 700;
-        }
-
-        .markdown-output tbody tr:nth-child(even) {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .markdown-output .table-wrap {
-            overflow-x: auto;
-            margin: 0 0 0.9em;
-        }
-
         .job-actions {
             display: flex;
             gap: 10px;
@@ -501,6 +384,15 @@
         .small {
             font-size: 0.84rem;
             color: var(--muted);
+        }
+
+        .help-box {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px 14px;
+            line-height: 1.5;
+            color: var(--soft);
         }
 
         @media (max-width: 980px) {
@@ -539,7 +431,7 @@
             <aside class="panel glass">
                 <h2>Procesar archivo</h2>
                 <p>
-                    Sube un documento o imagen y recibe el resultado cuando termine el procesamiento.
+                    Sube un documento o imagen y elige el idioma que deseas usar.
                 </p>
 
                 <div class="stack">
@@ -553,6 +445,22 @@
                             <label class="label" for="filename-preview">Nombre detectado</label>
                             <input id="filename-preview" type="text" readonly placeholder="Sin archivo seleccionado" />
                         </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label" for="language-select">Idioma</label>
+                        <select id="language-select"></select>
+                        <div id="language-summary" class="small">Cargando idiomas...</div>
+                    </div>
+
+                    <div class="help-box">
+                        🟢 significa que el idioma ya está descargado.  
+                        🔴 significa que todavía no está descargado.
+                    </div>
+
+                    <div class="row">
+                        <button id="install-language" class="secondary" type="button">Descargar idioma</button>
+                        <button id="reload-languages" class="secondary" type="button">Actualizar lista</button>
                     </div>
 
                     <div class="row">
@@ -593,6 +501,11 @@
             apiBase: "",
             jobs: [],
             activeControllers: new Map(),
+            catalog: [],
+            installed: [],
+            processingOptions: [],
+            defaultLanguage: "spa",
+            unifiedOptions: [],
         };
 
         const elements = {
@@ -601,6 +514,10 @@
             versionLine: document.getElementById("version-line"),
             fileInput: document.getElementById("file-input"),
             filenamePreview: document.getElementById("filename-preview"),
+            languageSelect: document.getElementById("language-select"),
+            languageSummary: document.getElementById("language-summary"),
+            installLanguage: document.getElementById("install-language"),
+            reloadLanguages: document.getElementById("reload-languages"),
             submitJob: document.getElementById("submit-job"),
             clearJobs: document.getElementById("clear-jobs"),
             jobs: document.getElementById("jobs"),
@@ -653,201 +570,11 @@
             elements.versionLine.textContent = `Versión ${UI_META.version}`;
         }
 
-        function renderInlineMarkdown(text) {
-            let html = escapeHtml(text);
-
-            html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
-            html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-            html = html.replace(/__([^_]+)__/g, "<strong>$1</strong>");
-            html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
-            html = html.replace(/_([^_]+)_/g, "<em>$1</em>");
-            html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
-
-            return html;
-        }
-
-        function isMarkdownTableSeparator(line) {
-            const trimmed = line.trim();
-            if (!trimmed.includes("|")) return false;
-
-            const cells = trimmed.split("|").map(cell => cell.trim()).filter(Boolean);
-            if (!cells.length) return false;
-
-            return cells.every(cell => /^:?-{3,}:?$/.test(cell));
-        }
-
-        function parseMarkdownTableRow(line) {
-            let trimmed = line.trim();
-
-            if (trimmed.startsWith("|")) trimmed = trimmed.slice(1);
-            if (trimmed.endsWith("|")) trimmed = trimmed.slice(0, -1);
-
-            return trimmed.split("|").map(cell => cell.trim());
-        }
-
-        function getTableAlignments(separatorLine) {
-            const cells = parseMarkdownTableRow(separatorLine);
-
-            return cells.map(cell => {
-                const left = cell.startsWith(":");
-                const right = cell.endsWith(":");
-
-                if (left && right) return "center";
-                if (right) return "right";
-                if (left) return "left";
-                return "left";
-            });
-        }
-
-        function renderMarkdownTable(headerLine, separatorLine, bodyLines) {
-            const headers = parseMarkdownTableRow(headerLine);
-            const alignments = getTableAlignments(separatorLine);
-
-            const thead = `
-                <thead>
-                    <tr>
-                        ${headers.map((cell, index) => {
-                            const align = alignments[index] || "left";
-                            return `<th style="text-align:${align}">${renderInlineMarkdown(cell)}</th>`;
-                        }).join("")}
-                    </tr>
-                </thead>
-            `;
-
-            const tbody = `
-                <tbody>
-                    ${bodyLines.map(line => {
-                        const cells = parseMarkdownTableRow(line);
-                        const cellCount = Math.max(headers.length, cells.length);
-
-                        return `
-                            <tr>
-                                ${Array.from({ length: cellCount }).map((_, index) => {
-                                    const cell = cells[index] ?? "";
-                                    const align = alignments[index] || "left";
-                                    return `<td style="text-align:${align}">${renderInlineMarkdown(cell)}</td>`;
-                                }).join("")}
-                            </tr>
-                        `;
-                    }).join("")}
-                </tbody>
-            `;
-
-            return `<div class="table-wrap"><table>${thead}${tbody}</table></div>`;
-        }
-
         function renderMarkdown(text) {
             if (!text || !text.trim()) {
                 return `<div class="markdown-output empty">Todavía no hay texto final disponible.</div>`;
             }
-
-            const normalized = text.replace(/\r\n/g, "\n");
-            const lines = normalized.split("\n");
-            const blocks = [];
-
-            let i = 0;
-            while (i < lines.length) {
-                const line = lines[i];
-
-                if (!line.trim()) {
-                    i++;
-                    continue;
-                }
-
-                if (line.startsWith("```")) {
-                    const codeLines = [];
-                    i++;
-                    while (i < lines.length && !lines[i].startsWith("```")) {
-                        codeLines.push(lines[i]);
-                        i++;
-                    }
-                    if (i < lines.length && lines[i].startsWith("```")) {
-                        i++;
-                    }
-                    blocks.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
-                    continue;
-                }
-
-                const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
-                if (headingMatch) {
-                    const level = headingMatch[1].length;
-                    blocks.push(`<h${level}>${renderInlineMarkdown(headingMatch[2])}</h${level}>`);
-                    i++;
-                    continue;
-                }
-
-                if (
-                    i + 1 < lines.length &&
-                    lines[i].includes("|") &&
-                    isMarkdownTableSeparator(lines[i + 1])
-                ) {
-                    const headerLine = lines[i];
-                    const separatorLine = lines[i + 1];
-                    const bodyLines = [];
-
-                    i += 2;
-                    while (i < lines.length && lines[i].trim() && lines[i].includes("|")) {
-                        bodyLines.push(lines[i]);
-                        i++;
-                    }
-
-                    blocks.push(renderMarkdownTable(headerLine, separatorLine, bodyLines));
-                    continue;
-                }
-
-                if (/^>\s+/.test(line)) {
-                    const quoteLines = [];
-                    while (i < lines.length && /^>\s+/.test(lines[i])) {
-                        quoteLines.push(lines[i].replace(/^>\s+/, ""));
-                        i++;
-                    }
-                    blocks.push(`<blockquote>${quoteLines.map(renderInlineMarkdown).join("<br>")}</blockquote>`);
-                    continue;
-                }
-
-                if (/^[-*]\s+/.test(line)) {
-                    const items = [];
-                    while (i < lines.length && /^[-*]\s+/.test(lines[i])) {
-                        items.push(`<li>${renderInlineMarkdown(lines[i].replace(/^[-*]\s+/, ""))}</li>`);
-                        i++;
-                    }
-                    blocks.push(`<ul>${items.join("")}</ul>`);
-                    continue;
-                }
-
-                if (/^\d+\.\s+/.test(line)) {
-                    const items = [];
-                    while (i < lines.length && /^\d+\.\s+/.test(lines[i])) {
-                        items.push(`<li>${renderInlineMarkdown(lines[i].replace(/^\d+\.\s+/, ""))}</li>`);
-                        i++;
-                    }
-                    blocks.push(`<ol>${items.join("")}</ol>`);
-                    continue;
-                }
-
-                const paragraphLines = [];
-                while (
-                    i < lines.length &&
-                    lines[i].trim() &&
-                    !lines[i].startsWith("```") &&
-                    !/^(#{1,6})\s+/.test(lines[i]) &&
-                    !/^>\s+/.test(lines[i]) &&
-                    !/^[-*]\s+/.test(lines[i]) &&
-                    !/^\d+\.\s+/.test(lines[i]) &&
-                    !(
-                        i + 1 < lines.length &&
-                        lines[i].includes("|") &&
-                        isMarkdownTableSeparator(lines[i + 1])
-                    )
-                ) {
-                    paragraphLines.push(lines[i]);
-                    i++;
-                }
-
-                blocks.push(`<p>${paragraphLines.map(renderInlineMarkdown).join("<br>")}</p>`);
-            }
-
-            return `<div class="markdown-output">${blocks.join("")}</div>`;
+            return `<div class="markdown-output">${escapeHtml(text).replace(/\n/g, "<br>")}</div>`;
         }
 
         function renderJobs() {
@@ -863,14 +590,6 @@
             elements.jobs.innerHTML = state.jobs.map((job) => {
                 const progress = Number.isFinite(job.progress) ? job.progress : 0;
                 const message = job.message || "Esperando actualizaciones...";
-                const warnings = Array.isArray(job.warnings) && job.warnings.length
-                    ? `
-                        <div class="notice" data-tone="warning">
-                            ${job.warnings.map(escapeHtml).join("<br>")}
-                        </div>
-                    `
-                    : "";
-
                 const error = job.error
                     ? `<div class="notice" data-tone="error">${escapeHtml(job.error)}</div>`
                     : "";
@@ -885,6 +604,7 @@
                                 <div class="job-meta">
                                     <span><strong>Estado:</strong> ${escapeHtml(job.status || "-")}</span>
                                     <span><strong>Creada:</strong> ${escapeHtml(formatDate(job.createdAt))}</span>
+                                    <span><strong>Idioma:</strong> ${escapeHtml(job.langLabel || "-")}</span>
                                 </div>
                             </div>
                             <span class="pill" data-status="${escapeHtml(job.status || "queued")}">${escapeHtml(job.status || "queued")}</span>
@@ -900,7 +620,6 @@
                             </div>
                         </div>
 
-                        ${warnings}
                         ${error}
 
                         <div>
@@ -936,12 +655,12 @@
                     fileName: "",
                     status: "queued",
                     progress: 0,
-                    warnings: [],
                     error: null,
-                    result: null,
                     resultText: "",
                     message: null,
                     createdAt: new Date().toISOString(),
+                    lang: "",
+                    langLabel: "",
                     ...partial,
                 });
             } else {
@@ -956,7 +675,6 @@
 
         function extractResultText(result) {
             if (!result) return "";
-
             if (typeof result === "string") return result;
             if (typeof result.markdown_text === "string") return result.markdown_text;
             if (typeof result.markdown === "string") return result.markdown;
@@ -964,7 +682,6 @@
             if (typeof result.content === "string") return result.content;
             if (typeof result.raw_text === "string") return result.raw_text;
             if (typeof result.extracted_text === "string") return result.extracted_text;
-
             return "";
         }
 
@@ -976,7 +693,6 @@
 
             for (const line of lines) {
                 if (!line || line.startsWith(":")) continue;
-
                 if (line.startsWith("event:")) {
                     event = line.slice(6).trim();
                 } else if (line.startsWith("data:")) {
@@ -1030,6 +746,162 @@
             }
         }
 
+        async function loadLanguages() {
+            state.apiBase = detectApiBaseFromLocation();
+
+            const response = await fetch(apiUrl("/languages/catalog"));
+            if (!response.ok) {
+                throw new Error(`No se pudieron cargar los idiomas (${response.status})`);
+            }
+
+            const payload = await response.json();
+            state.defaultLanguage = payload.default || "spa";
+            state.catalog = Array.isArray(payload.catalog) ? payload.catalog : [];
+            state.installed = Array.isArray(payload.installed) ? payload.installed : [];
+            state.processingOptions = Array.isArray(payload.processing_options) ? payload.processing_options : [];
+
+            buildUnifiedOptions();
+            renderLanguageSelect();
+            updateLanguageActionState();
+        }
+
+        function isInstalledCode(code) {
+            return state.installed.some(item => item.code === code);
+        }
+
+        function buildUnifiedOptions() {
+            const options = [];
+
+            const allInstalledOption = state.processingOptions.find(item => item.value === "all_installed");
+            if (allInstalledOption) {
+                options.push({
+                    value: allInstalledOption.value,
+                    label: allInstalledOption.label,
+                    installed: true,
+                    isAllInstalled: true,
+                });
+            }
+
+            const installedItems = state.catalog
+                .filter(item => isInstalledCode(item.code))
+                .sort((a, b) => a.label.localeCompare(b.label, "es"));
+
+            const notInstalledItems = state.catalog
+                .filter(item => !isInstalledCode(item.code))
+                .sort((a, b) => a.label.localeCompare(b.label, "es"));
+
+            for (const item of installedItems) {
+                options.push({
+                    value: item.code,
+                    label: item.label,
+                    installed: true,
+                    isAllInstalled: false,
+                });
+            }
+
+            for (const item of notInstalledItems) {
+                options.push({
+                    value: item.code,
+                    label: item.label,
+                    installed: false,
+                    isAllInstalled: false,
+                });
+            }
+
+            state.unifiedOptions = options;
+        }
+
+        function renderLanguageSelect() {
+            const options = state.unifiedOptions.map(item => {
+                const marker = item.installed ? "🟢" : "🔴";
+                const selected = item.value === state.defaultLanguage ? "selected" : "";
+                return `<option value="${escapeHtml(item.value)}" ${selected}>${marker} ${escapeHtml(item.label)}</option>`;
+            });
+
+            elements.languageSelect.innerHTML = options.join("");
+
+            if (!elements.languageSelect.value && state.unifiedOptions.length) {
+                elements.languageSelect.value = state.unifiedOptions[0].value;
+            }
+        }
+
+        function getSelectedLanguageValue() {
+            return elements.languageSelect.value || state.defaultLanguage || "spa";
+        }
+
+        function getSelectedLanguageOption() {
+            return state.unifiedOptions.find(item => item.value === getSelectedLanguageValue()) || null;
+        }
+
+        function updateLanguageActionState() {
+            const selected = getSelectedLanguageOption();
+
+            if (!selected) {
+                elements.installLanguage.disabled = true;
+                elements.languageSummary.textContent = "No hay idiomas disponibles.";
+                return;
+            }
+
+            if (selected.isAllInstalled) {
+                elements.installLanguage.disabled = true;
+                elements.languageSummary.textContent = "Esta opción usa todos los idiomas que ya están descargados.";
+                return;
+            }
+
+            if (selected.installed) {
+                elements.installLanguage.disabled = true;
+                elements.languageSummary.textContent = `${selected.label} ya está descargado y listo para usar.`;
+                return;
+            }
+
+            elements.installLanguage.disabled = false;
+            elements.languageSummary.textContent = `${selected.label} no está descargado todavía. Puedes descargarlo ahora.`;
+        }
+
+        async function installSelectedLanguage() {
+            const selected = getSelectedLanguageOption();
+
+            if (!selected) {
+                setNotice("Selecciona un idioma.", "warning");
+                return;
+            }
+
+            if (selected.isAllInstalled || selected.installed) {
+                setNotice("Ese idioma ya está disponible y no necesita descarga.", "warning");
+                return;
+            }
+
+            elements.installLanguage.disabled = true;
+
+            try {
+                setNotice("Descargando idioma...", "neutral");
+
+                const response = await fetch(apiUrl("/languages/install"), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ codes: [selected.value] }),
+                });
+
+                if (!response.ok) {
+                    let detail = `Error HTTP ${response.status}`;
+                    try {
+                        const payload = await response.json();
+                        detail = payload?.detail || detail;
+                    } catch {}
+                    throw new Error(detail);
+                }
+
+                await loadLanguages();
+                elements.languageSelect.value = selected.value;
+                updateLanguageActionState();
+                setNotice("Idioma descargado correctamente.", "success");
+            } catch (error) {
+                setNotice(`No se pudo descargar el idioma: ${error.message}`, "error");
+            } finally {
+                updateLanguageActionState();
+            }
+        }
+
         async function submitOCRJob() {
             state.apiBase = detectApiBaseFromLocation();
 
@@ -1037,6 +909,17 @@
 
             if (!file) {
                 setNotice("Debes seleccionar un archivo antes de enviarlo.", "error");
+                return;
+            }
+
+            const selected = getSelectedLanguageOption();
+            if (!selected) {
+                setNotice("Debes seleccionar un idioma.", "error");
+                return;
+            }
+
+            if (!selected.installed && !selected.isAllInstalled) {
+                setNotice("Primero debes descargar el idioma seleccionado.", "warning");
                 return;
             }
 
@@ -1050,6 +933,8 @@
                 progress: 0,
                 message: "Preparando envío...",
                 createdAt: new Date().toISOString(),
+                lang: selected.value,
+                langLabel: selected.label,
             });
 
             elements.submitJob.disabled = true;
@@ -1058,6 +943,7 @@
             try {
                 const formData = new FormData();
                 formData.append("file", file);
+                formData.append("lang", selected.value);
 
                 const response = await fetch(apiUrl("/process/stream"), {
                     method: "POST",
@@ -1084,6 +970,8 @@
                     status: "accepted",
                     progress: 0,
                     message: "Conexión establecida. Esperando eventos...",
+                    lang: selected.value,
+                    langLabel: selected.label,
                 });
 
                 await consumeSSEStream(response, ({ event, data }) => {
@@ -1095,20 +983,16 @@
                     upsertJob(localId, {
                         status: data.status ?? event ?? "processing",
                         progress: Number.isFinite(data.progress) ? data.progress : (currentJob?.progress ?? 0),
-                        warnings: Array.isArray(data.warnings) ? data.warnings : [],
                         error: data.error ?? null,
-                        result: data.result ?? null,
                         resultText: resultText || currentJob?.resultText || "",
                         message: data.message ?? event ?? null,
                         createdAt: data.created_at ?? currentJob?.createdAt,
+                        lang: currentJob?.lang || selected.value,
+                        langLabel: currentJob?.langLabel || selected.label,
                     });
 
                     if (event === "completed" || data.event === "completed") {
                         setNotice(`OCR completado para ${file.name}.`, "success");
-                    }
-
-                    if (event === "failed" || data.event === "failed") {
-                        setNotice(`La tarea falló: ${data.error || "sin detalle"}`, "error");
                     }
                 });
 
@@ -1132,7 +1016,7 @@
                 setNotice(
                     aborted
                         ? `Se canceló la visualización de ${file.name}.`
-                        : `No se pudo procesar el archivo: ${error.message}`,
+                        : "La tarea falló. Revisa el detalle en la tarjeta.",
                     aborted ? "warning" : "error"
                 );
             } finally {
@@ -1143,9 +1027,7 @@
 
         window.cancelJob = function(localId) {
             const controller = state.activeControllers.get(localId);
-            if (controller) {
-                controller.abort();
-            }
+            if (controller) controller.abort();
         };
 
         window.copyResult = async function(localId) {
@@ -1181,11 +1063,28 @@
         elements.fileInput.addEventListener("change", handleFileChange);
         elements.submitJob.addEventListener("click", submitOCRJob);
         elements.clearJobs.addEventListener("click", clearJobs);
+        elements.installLanguage.addEventListener("click", installSelectedLanguage);
+        elements.reloadLanguages.addEventListener("click", async () => {
+            try {
+                await loadLanguages();
+                setNotice("Lista de idiomas actualizada.", "success");
+            } catch (error) {
+                setNotice(`No se pudieron cargar los idiomas: ${error.message}`, "error");
+            }
+        });
+        elements.languageSelect.addEventListener("change", updateLanguageActionState);
 
         async function initialize() {
             applyStaticMeta();
             state.apiBase = detectApiBaseFromLocation();
             renderJobs();
+
+            try {
+                await loadLanguages();
+                setNotice("Listo para procesar.", "neutral");
+            } catch (error) {
+                setNotice(`No se pudieron cargar los idiomas: ${error.message}`, "error");
+            }
         }
 
         initialize();

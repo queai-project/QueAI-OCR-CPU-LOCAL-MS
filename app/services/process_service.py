@@ -11,6 +11,7 @@ from app.core.logger import get_logger
 from app.core.redis import get_async_redis
 from app.core.sse import encode_sse, encode_sse_comment
 from app.services.event_bus import AsyncEventBus
+from app.services.language_service import LanguageService
 from app.services.queue_service import QueueService
 from app.services.validation import FileValidationService
 from app.storage.temp_store import TempStore
@@ -24,8 +25,9 @@ class ProcessService:
         self.validator = FileValidationService(settings)
         self.temp_store = TempStore(settings)
         self.queue_service = QueueService(settings)
+        self.language_service = LanguageService(settings)
 
-    async def start_stream(self, *, request: Request, file: UploadFile) -> StreamingResponse:
+    async def start_stream(self, *, request: Request, file: UploadFile, lang: str) -> StreamingResponse:
         job_id = str(uuid.uuid4())
         workspace_created = False
         redis = None
@@ -44,9 +46,12 @@ class ProcessService:
             redis = get_async_redis(self.settings)
             bus = AsyncEventBus(redis=redis, settings=self.settings)
 
+            normalized_lang = self.language_service.normalize_processing_selection(lang)
+            
             self.queue_service.enqueue_process_job(
                 job_id=job_id,
                 workspace_dir=str(workspace),
+                lang=normalized_lang,
             )
 
             await bus.publish(
@@ -71,7 +76,7 @@ class ProcessService:
                     progress=0,
                     current_page=None,
                     total_pages=doc_info.get("page_count"),
-                    message="Job queued",
+                    message=f"Job queued (idiomas: {normalized_lang})",
                 )
             )
 

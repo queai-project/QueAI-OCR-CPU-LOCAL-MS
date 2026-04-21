@@ -11,7 +11,7 @@ class QueueService:
         self.settings = settings
         self.queue: Queue = get_queue(settings)
 
-    def enqueue_process_job(self, *, job_id: str, workspace_dir: str) -> None:
+    def enqueue_process_job(self, *, job_id: str, workspace_dir: str, lang: str) -> None:
         try:
             retry = Retry(
                 max=self.settings.job_max_retries,
@@ -23,6 +23,7 @@ class QueueService:
                 kwargs={
                     "job_id": job_id,
                     "workspace_dir": workspace_dir,
+                    "lang": lang,
                 },
                 job_id=job_id,
                 job_timeout=self.settings.job_timeout_seconds,

@@ -14,18 +14,31 @@ services:
       - internal_ocr_network
 
   api:
+    image: plugin_ocr_local_cpu:latest
     build:
       context: .
-      dockerfile: docker/api.Dockerfile
+      dockerfile: Dockerfile
+      args:
+        OCR_BASE_IMAGE: ghcr.io/queai-project/queai-ocr-base:sha-bb7bf33
     container_name: plugin_ocr_local_cpu_service
     restart: unless-stopped
     depends_on:
       redis:
         condition: service_healthy
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      TESSDATA_PREFIX: /data
     volumes:
       - job_tmp:/tmp/ocr-jobs
+      - tessdata_data:/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/ocr_local_cpu/health"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/ocr_local_cpu/health')"
+        ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -39,21 +52,26 @@ services:
       - "traefik.http.services.plugin-ocr_local_cpu.loadbalancer.server.port=8000"
 
   worker:
-    build:
-      context: .
-      dockerfile: docker/worker.Dockerfile
+    image: plugin_ocr_local_cpu:latest
     container_name: plugin_ocr_local_cpu_worker
     restart: unless-stopped
     depends_on:
       redis:
         condition: service_healthy
+      api:
+        condition: service_started
+    command: ["python", "-m", "app.workers.worker"]
+    environment:
+      TESSDATA_PREFIX: /data
     volumes:
       - job_tmp:/tmp/ocr-jobs
+      - tessdata_data:/data
     networks:
       - internal_ocr_network
 
 volumes:
   job_tmp:
+  tessdata_data:
 
 networks:
   internal_ocr_network:

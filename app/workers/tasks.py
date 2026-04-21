@@ -13,7 +13,7 @@ from app.storage.temp_store import TempStore
 logger = get_logger(__name__)
 
 
-def process_document_task(job_id: str, workspace_dir: str) -> dict:
+def process_document_task(job_id: str, workspace_dir: str, lang: str) -> dict:
     settings = get_settings()
     redis = Redis.from_url(settings.redis_url, decode_responses=True)
     bus = SyncEventBus(redis=redis, settings=settings)
@@ -58,6 +58,7 @@ def process_document_task(job_id: str, workspace_dir: str) -> dict:
                     "total_pages": total_pages,
                     "warnings": warnings or [],
                     "error": None,
+                    "lang": lang,
                 }
             )
             job.save_meta()
@@ -76,7 +77,7 @@ def process_document_task(job_id: str, workspace_dir: str) -> dict:
                 status="processing",
                 stage="worker_started",
                 progress=1,
-                message="Worker started",
+                message=f"Worker started (idiomas: {lang})",
             )
         )
 
@@ -87,6 +88,7 @@ def process_document_task(job_id: str, workspace_dir: str) -> dict:
                     "stage": "worker_started",
                     "progress": 1,
                     "error": None,
+                    "lang": lang,
                 }
             )
             job.save_meta()
@@ -96,6 +98,7 @@ def process_document_task(job_id: str, workspace_dir: str) -> dict:
             document_path=document_path,
             job_id=job_id,
             report_progress=push_progress,
+            lang=lang,
         )
 
         elapsed = round(monotonic() - task_start, 3)
@@ -125,6 +128,7 @@ def process_document_task(job_id: str, workspace_dir: str) -> dict:
                     "progress": 100,
                     "result": result,
                     "error": None,
+                    "lang": lang,
                 }
             )
             job.save_meta()
@@ -151,6 +155,7 @@ def process_document_task(job_id: str, workspace_dir: str) -> dict:
                     "stage": "failed",
                     "progress": 100,
                     "error": str(exc),
+                    "lang": lang,
                 }
             )
             job.save_meta()

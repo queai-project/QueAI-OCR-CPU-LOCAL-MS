@@ -175,8 +175,24 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("OCR_ENGINE"),
     )
     ocr_lang: str = Field(
-        default="spa+eng",
+        default="spa",
         validation_alias=AliasChoices("OCR_LANG"),
+    )
+    tesseract_default_lang: str = Field(
+        default="spa",
+        validation_alias=AliasChoices("TESSERACT_DEFAULT_LANG"),
+    )
+    tesseract_tessdata_dir: str = Field(
+        default="/data",
+        validation_alias=AliasChoices("TESSERACT_TESSDATA_DIR"),
+    )
+    tesseract_catalog_api: str = Field(
+        default="https://api.github.com/repos/tesseract-ocr/tessdata/contents",
+        validation_alias=AliasChoices("TESSERACT_CATALOG_API"),
+    )
+    tesseract_catalog_raw_base: str = Field(
+        default="https://raw.githubusercontent.com/tesseract-ocr/tessdata/main",
+        validation_alias=AliasChoices("TESSERACT_CATALOG_RAW_BASE"),
     )
     pdf_render_dpi: int = Field(
         default=200,
