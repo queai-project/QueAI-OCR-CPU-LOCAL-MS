@@ -1,13 +1,8 @@
-Tomando como base cómo QueAI presenta su ecosistema —orquestación modular, despliegue local o cloud, plugins desacoplados con `manifest.json`, instalación desde dashboard y foco en privacidad/local-first—, este README conviene posicionarlo como un **módulo OCR local, instalable y operable desde QueAI**, no como una API suelta. ([QueAI][1])
-
-Aquí tienes una propuesta nueva y mucho más alineada con QueAI:
-
-````markdown
 # QueAI OCR Local CPU
 
-Módulo OCR local para **QueAI** que permite extraer texto de **imágenes, documentos escaneados y PDFs** de forma **offline**, mediante una arquitectura desacoplada basada en contenedores.
+Módulo de **reconocimiento óptico de caracteres** para [QueAI](https://queai.dev). Extrae texto de imágenes, documentos escaneados y PDFs ejecutando Tesseract en CPU.
 
-Está diseñado para integrarse como un plugin instalable dentro del ecosistema de QueAI, manteniendo el enfoque **local-first**, modular y sin dependencia obligatoria de servicios externos.
+Esta es una de las implementaciones posibles del contrato OCR del orquestador. Convive con otras (cloud OCR, GPU OCR) que pueden coexistir o sustituirla — el kernel las trata por igual. Esta variante corre el modelo dentro del propio contenedor: no hace llamadas a APIs externas y no requiere conectividad saliente.
 
 ## Qué hace este módulo
 
