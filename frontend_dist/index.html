@@ -4,27 +4,35 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>OCR Local CPU</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        /* Design system QueAI (ver docs/DESIGN_TOKENS.md del kernel).
+           Mantenemos los nombres OCR (--accent, --panel, --muted...) para
+           no tocar mil selectores; lo que cambia son los VALORES para
+           alinearse con el resto de plugins oficiales: flat, sin glass,
+           sin gradientes, paleta consistente con el kernel. */
         :root {
-            --bg-1: #0b0c0f;
-            --bg-2: #111317;
-            --panel: rgba(20, 23, 29, 0.92);
-            --panel-2: rgba(28, 31, 38, 0.96);
-            --border: rgba(255, 255, 255, 0.08);
-            --border-strong: rgba(255, 255, 255, 0.14);
-            --text: #f3f5f7;
-            --muted: #a9b0bb;
-            --soft: #d9dde4;
-            --accent: #d62828;
+            --bg-1: #141414;       /* página */
+            --bg-2: #1c1c1c;       /* tarjetas */
+            --panel: #1c1c1c;      /* (era rgba glass) */
+            --panel-2: #262626;    /* hover/elevación */
+            --border: #2a2a2a;
+            --border-strong: #383838;
+            --text: #eaeae6;
+            --muted: #909090;
+            --soft: #b0b0b0;
+            --accent: #e8180c;     /* rojo QueAI canónico */
             --accent-2: #ff5c5c;
-            --ok: #20c997;
-            --warn: #ffb020;
+            --ok: #4ade80;
+            --warn: #f5c042;
             --danger: #ff5d5d;
-            --shadow: 0 18px 60px rgba(0, 0, 0, 0.4);
-            --radius-xl: 22px;
-            --radius-lg: 18px;
-            --radius-md: 14px;
-            --radius-sm: 12px;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.30);
+            --radius-xl: 14px;
+            --radius-lg: 14px;
+            --radius-md: 12px;
+            --radius-sm: 9px;
         }
 
         * { box-sizing: border-box; }
@@ -32,12 +40,11 @@
         html, body {
             margin: 0;
             min-height: 100%;
-            font-family: "Inter", "Segoe UI", Arial, sans-serif;
+            font-family: 'DM Sans', system-ui, 'Segoe UI', Arial, sans-serif;
+            font-size: 15px;
+            -webkit-font-smoothing: antialiased;
             color: var(--text);
-            background:
-                radial-gradient(circle at top left, rgba(214, 40, 40, 0.18), transparent 25%),
-                radial-gradient(circle at top right, rgba(255, 255, 255, 0.05), transparent 22%),
-                linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 100%);
+            background: var(--bg-1);
         }
 
         body {
@@ -55,8 +62,6 @@
             background: var(--panel);
             border: 1px solid var(--border);
             border-radius: var(--radius-xl);
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(14px);
         }
 
         .hero {
@@ -406,7 +411,7 @@
             border: 1px solid rgba(255,255,255,0.08);
             padding: 0.14em 0.38em;
             border-radius: 8px;
-            font-family: "SFMono-Regular", Consolas, monospace;
+            font-family: 'DM Mono', 'SFMono-Regular', Consolas, monospace;
             font-size: 0.92em;
         }
 
@@ -499,8 +504,7 @@
             display: none;
             align-items: center;
             justify-content: center;
-            background: rgba(7, 8, 11, 0.82);
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.7);
             padding: 20px;
         }
 
