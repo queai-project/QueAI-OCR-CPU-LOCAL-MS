@@ -9,5 +9,6 @@
   "logo": "logo.png",
   "description": "Módulo OCR oficial para QueAI. Imagen a texto de alta fidelidad basado en Tesseract. Ejecución local en CPU.",
   "author": "Juana Iris Perez && Alejandro Fonseca",
-  "license": "MIT"
+  "license": "MIT",
+  "description_en": "Official OCR module for QueAI. High-fidelity image-to-text powered by Tesseract. Runs locally on CPU."
 }
