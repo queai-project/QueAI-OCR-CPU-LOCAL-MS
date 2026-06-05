@@ -14,6 +14,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -56,11 +57,30 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.project_name,
         version=settings.version,
-        openapi_url=settings.openapi_path if settings.is_dev else None,
-        docs_url=settings.docs_path if settings.is_dev else None,
-        redoc_url=settings.redoc_path if settings.is_dev else None,
+        # OpenAPI siempre on (el Hub de QueAI declara /docs en el manifest).
+        # docs_url=None porque servimos Swagger UI con un theme dark abajo,
+        # alineado con el resto del kernel.
+        openapi_url=settings.openapi_path,
+        docs_url=None,
+        redoc_url=settings.redoc_path,
         lifespan=lifespan,
     )
+
+    @app.get(settings.docs_path, include_in_schema=False)
+    async def docs_dark():
+        # Swagger UI con paleta dark. SwaggerDark.css es el theme más usado
+        # y cubre el 95% de los componentes. Encima inyectamos overrides
+        # con la paleta QueAI exacta (#141414/#1c1c1c, rojo #e8180c, etc.)
+        # para que se sienta como una vista del kernel y no un widget
+        # genérico pegado encima.
+        return get_swagger_ui_html(
+            openapi_url=settings.openapi_path,
+            title=f"{settings.project_name} — API",
+            swagger_css_url=(
+                "https://cdn.jsdelivr.net/gh/Amoenus/SwaggerDark@v1.0.0/"
+                "SwaggerDark.css"
+            ),
+        )
 
     app.add_middleware(
         CORSMiddleware,
